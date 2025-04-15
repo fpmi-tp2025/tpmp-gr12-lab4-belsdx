@@ -5,13 +5,13 @@
 sqlite3 *db = NULL;
 
 bool initialize_database(const char *db_name) {
-    printf("正在连接数据库: %s\n", db_name);
+    printf("Connecting to database: %s\n", db_name);
     if (sqlite3_open(db_name, &db) != SQLITE_OK) {
-        fprintf(stderr, "无法打开数据库: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Failed to open database: %s\n", sqlite3_errmsg(db));
         return false;
     }
     if (sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL) != SQLITE_OK) {
-        fprintf(stderr, "外键启用失败: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Failed to enable foreign keys: %s\n", sqlite3_errmsg(db));
         return false;
     }
     return true;
@@ -24,7 +24,7 @@ void close_database() {
 bool execute_sql(const char *sql) {
     char *err_msg = NULL;
     if (sqlite3_exec(db, sql, NULL, NULL, &err_msg) != SQLITE_OK) {
-        fprintf(stderr, "SQL错误: %s\n", err_msg);
+        fprintf(stderr, "SQL Error: %s\n", err_msg);
         sqlite3_free(err_msg);
         return false;
     }

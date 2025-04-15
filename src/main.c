@@ -14,46 +14,47 @@ void input_str(const char *prompt, char *buffer, int max_len) {
 
 void add_country_ui() {
     Country c = {0};
-    input_str("国家名称（必填）: ", c.name, sizeof(c.name));
+    input_str("Country name (required): ", c.name, sizeof(c.name));
     if (strlen(c.name) == 0) {
-        printf("错误：国家名称不能为空！\n");
+        printf("Error: Country name cannot be empty!\n");
         return;
     }
-    input_str("首都（可选）: ", c.capital, sizeof(c.capital));
-    input_str("官方语言（可选）: ", c.language, sizeof(c.language));
-    printf("人口（万，默认0）: ");
+    input_str("Capital (optional): ", c.capital, sizeof(c.capital));
+    input_str("Official language (optional): ", c.language, sizeof(c.language));
+    printf("Population (default 0): ");
     scanf("%d", &c.population);
-    printf("面积（平方公里，默认0.0）: ");
-    scanf("%lf", &c.square);
+    printf("Area (km², default 0.0): ");
+    scanf("%lf", &c.area);
     getchar();
-    input_str("货币代码（如CNY，可选）: ", c.currency, sizeof(c.currency));
-    input_str("国家元首（可选）: ", c.head, sizeof(c.head));
+    input_str("Currency code (e.g., USD, optional): ", c.currency, sizeof(c.currency));
+    input_str("Head of state (optional): ", c.head_of_state, sizeof(c.head_of_state));
 
-    if (add_country(&c)) printf("国家添加成功！\n");
-    else printf("添加失败！\n");
+    if (add_country(&c)) printf("Country added successfully!\n");
+    else printf("Failed to add country!\n");
 }
 
 void add_region_ui() {
     Region r = {0};
-    printf("所属国家ID: ");
+    printf("Country ID: ");
     scanf("%d", &r.country_id);
     getchar();
-    input_str("区域名称: ", r.name, sizeof(r.name));
-    input_str("首府: ", r.capital, sizeof(r.capital));
-    printf("人口: ");
+    input_str("Region name: ", r.name, sizeof(r.name));
+    input_str("Regional capital: ", r.regional_capital, sizeof(r.regional_capital));
+    printf("Population: ");
     scanf("%d", &r.population);
-    printf("面积（平方公里）: ");
-    scanf("%lf", &r.square);
-    if (add_region(&r)) printf("区域添加成功！\n");
-    else printf("添加失败！\n");
+    printf("Area (km²): ");
+    scanf("%lf", &r.area);
+    if (add_region(&r)) printf("Region added successfully!\n");
+    else printf("Failed to add region!\n");
 }
 
 void main_menu() {
     int choice;
     do {
-        printf("\n=== 国家管理系统 ===\n");
-        printf("1. 添加国家\n2. 删除国家\n3. 显示国家\n4. 添加区域\n5. 删除区域\n");
-        printf("6. 显示某国家的区域\n7. 计算区域平均人口\n8. 计算总人口\n0. 退出\n请选择操作: ");
+        printf("\n=== Country Management System ===\n");
+        printf("1. Add Country\n2. Delete Country\n3. List Countries\n4. Add Region\n");
+        printf("5. Delete Region\n6. List Regions by Country\n7. Calculate Avg Region Population\n");
+        printf("8. Calculate Total Population\n0. Exit\nChoose an option: ");
         scanf("%d", &choice);
         getchar();
 
@@ -61,49 +62,49 @@ void main_menu() {
             case 1: add_country_ui(); break;
             case 2: {
                 int id;
-                printf("输入要删除的国家ID: ");
+                printf("Enter country ID to delete: ");
                 scanf("%d", &id);
-                delete_country(id) ? printf("删除成功！\n") : printf("删除失败！\n");
+                delete_country(id) ? printf("Country deleted!\n") : printf("Deletion failed!\n");
                 break;
             }
-            case 3: print_countries(); break;
+            case 3: list_countries(); break;
             case 4: add_region_ui(); break;
             case 5: {
                 int id;
-                printf("输入要删除的区域ID: ");
+                printf("Enter region ID to delete: ");
                 scanf("%d", &id);
-                delete_region(id) ? printf("删除成功！\n") : printf("删除失败！\n");
+                delete_region(id) ? printf("Region deleted!\n") : printf("Deletion failed!\n");
                 break;
             }
             case 6: {
                 int id;
-                printf("输入国家ID: ");
+                printf("Enter country ID: ");
                 scanf("%d", &id);
-                print_regions_by_country(id);
+                list_regions_by_country(id);
                 break;
             }
             case 7: {
                 int id;
-                printf("输入国家ID: ");
+                printf("Enter country ID: ");
                 scanf("%d", &id);
-                float avg = get_avg_region_population(id);
-                printf("平均人口: %.2f\n", avg);
+                float avg = get_average_region_population(id);
+                printf("Average region population: %.2f\n", avg);
                 break;
             }
             case 8: {
                 int total = get_total_population();
-                printf("总人口: %d\n", total);
+                printf("Total population: %d\n", total);
                 break;
             }
-            case 0: printf("再见！\n"); break;
-            default: printf("无效选项！\n");
+            case 0: printf("Goodbye!\n"); break;
+            default: printf("Invalid option!\n");
         }
     } while (choice != 0);
 }
 
 int main() {
     if (!initialize_database("src/countries.db")) {
-        fprintf(stderr, "数据库初始化失败！\n");
+        fprintf(stderr, "Database initialization failed!\n");
         return 1;
     }
 
@@ -114,19 +115,19 @@ int main() {
             "name TEXT NOT NULL, "
             "capital TEXT, "
             "language TEXT, "
-            "population_country INTEGER DEFAULT 0, "
-            "square_country REAL DEFAULT 0.0, "
+            "population INTEGER DEFAULT 0, "
+            "area REAL DEFAULT 0.0, "
             "currency TEXT, "
-            "head_country TEXT"
+            "head_of_state TEXT"
             ");"
         );
         execute_sql(
             "CREATE TABLE region ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "name TEXT NOT NULL, "
-            "capital_region TEXT, "
-            "population_region INTEGER DEFAULT 0, "
-            "square_region REAL DEFAULT 0.0, "
+            "regional_capital TEXT, "
+            "population INTEGER DEFAULT 0, "
+            "area REAL DEFAULT 0.0, "
             "country_id INTEGER, "
             "FOREIGN KEY (country_id) REFERENCES country(id) ON DELETE CASCADE"
             ");"
