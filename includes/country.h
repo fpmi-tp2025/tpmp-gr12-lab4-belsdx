@@ -7,10 +7,10 @@ typedef struct {
     char name[100];
     char capital[100];
     char language[50];
-    int population;
-    double square;
+    int population_country;
+    double square_country;
     char currency[4];
-    char head[100];
+    char head_country[100];
 } Country;
 
 bool add_country(Country *country);

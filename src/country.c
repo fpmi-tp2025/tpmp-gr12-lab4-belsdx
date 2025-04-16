@@ -6,21 +6,19 @@
 bool add_country(Country *country) {
     const char *sql = 
         "INSERT INTO country (name, capital, language, population_country, square_country, currency, head_country) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?);";
-    sqlite3_stmt *stmt;
+        "VALUES (?, ?, ?, ?, ?, ?, ?);";    sqlite3_stmt *stmt;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
-        fprintf(stderr, "SQL错误: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "SQL Error: %s\n", sqlite3_errmsg(db));
         return false;
     }
 
     sqlite3_bind_text(stmt, 1, country->name, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, (strlen(country->capital) > 0) ? country->capital : NULL, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, (strlen(country->language) > 0) ? country->language : NULL, -1, SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 4, country->population);
-    sqlite3_bind_double(stmt, 5, country->square);
-    sqlite3_bind_text(stmt, 6, (strlen(country->currency) > 0) ? country->currency : NULL, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 7, (strlen(country->head) > 0) ? country->head : NULL, -1, SQLITE_STATIC);
-
+    sqlite3_bind_text(stmt, 2, country->capital, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, country->language, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 4, country->population_country);
+    sqlite3_bind_double(stmt, 5, country->square_country);
+    sqlite3_bind_text(stmt, 6, country->currency, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, country->head_country, -1, SQLITE_STATIC);
     bool success = (sqlite3_step(stmt) == SQLITE_DONE);
     sqlite3_finalize(stmt);
     return success;
@@ -36,13 +34,13 @@ void print_countries() {
     const char *sql = "SELECT id, name, capital, population_country FROM country;";
     sqlite3_stmt *stmt;
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        printf("ID | Country name | Capital | population\n");
-        printf("--------------------------------\n");
+        printf("ID | Country Name | Capital | Population_country\n");
+        printf("----------------------------------------\n");
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            printf("%-2d | %-10s | %-10s | %d\n",
+            printf("%-2d | %-12s | %-10s | %d\n",
                 sqlite3_column_int(stmt, 0),
-                sqlite3_column_text(stmt, 1),
-                sqlite3_column_text(stmt, 2),
+                (const char*)sqlite3_column_text(stmt, 1),
+                (const char*)sqlite3_column_text(stmt, 2),
                 sqlite3_column_int(stmt, 3)
             );
         }
@@ -53,7 +51,7 @@ void print_countries() {
 float get_avg_region_population(int country_id) {
     char sql[256];
     snprintf(sql, sizeof(sql),
-        "SELECT AVG(population_region) FROM region WHERE country_id = %d;",
+        "SELECT AVG(population) FROM region WHERE country_id = %d;",
         country_id
     );
     sqlite3_stmt *stmt;

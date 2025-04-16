@@ -14,23 +14,23 @@ void input_str(const char *prompt, char *buffer, int max_len) {
 
 void add_country_ui() {
     Country c = {0};
-    input_str("Country Name (required): ", c.name, sizeof(c.name));
+    input_str("Country name (required): ", c.name, sizeof(c.name));
     if (strlen(c.name) == 0) {
-        printf("Error: Country name cannot be empty！\n");
+        printf("Error: Country name cannot be empty!\n");
         return;
     }
     input_str("Capital (optional): ", c.capital, sizeof(c.capital));
     input_str("Official language (optional): ", c.language, sizeof(c.language));
-    printf("Population (million, default 0): ");
-    scanf("%d", &c.population);
-    printf("Area (square kilometers, default 0.0): ");
-    scanf("%lf", &c.square);
+    printf("Population (default 0): ");
+    scanf("%d", &c.population_country);
+    printf("Area (km², default 0.0): ");
+    scanf("%lf", &c.square_country);  // 使用 square
     getchar();
-    input_str("Currency (such as CNY, optional): ", c.currency, sizeof(c.currency));
-    input_str("Head of State (optional): ", c.head, sizeof(c.head));
+    input_str("Currency code (e.g., USD, optional): ", c.currency, sizeof(c.currency));
+    input_str("Head of state (optional): ", c.head_country, sizeof(c.head_country));  // 使用 head
 
-    if (add_country(&c)) printf("Country added successfully！\n");
-    else printf("Add failed！\n");
+    if (add_country(&c)) printf("Country added successfully!\n");
+    else printf("Failed to add country!\n");
 }
 
 void add_region_ui() {
@@ -38,22 +38,23 @@ void add_region_ui() {
     printf("Country ID: ");
     scanf("%d", &r.country_id);
     getchar();
-    input_str("Region Name: ", r.name, sizeof(r.name));
-    input_str("Capital: ", r.capital, sizeof(r.capital));
-    printf("population: ");
+    input_str("Region name: ", r.name, sizeof(r.name));
+    input_str("Capital: ", r.capital, sizeof(r.capital));  // 使用 capital
+    printf("Population: ");
     scanf("%d", &r.population);
-    printf("area（Square Kilometer）: ");
-    scanf("%lf", &r.square);
-    if (add_region(&r)) printf("Area added successfully！\n");
-    else printf("Add failed！\n");
+    printf("Area (km²): ");
+    scanf("%lf", &r.square);  // 使用 square
+    if (add_region(&r)) printf("Region added successfully!\n");
+    else printf("Failed to add region!\n");
 }
 
 void main_menu() {
     int choice;
     do {
-        printf("\n=== National Management System ===\n");
-        printf("1. Add Country\n2. Delete Country\n3. Show Country\n4. Adding a Region\n5. Delete a region\n");
-        printf("6. Display regions of a country\n7. Calculate the average population of a region\n8. Calculate total population\n0. quit\nPlease select an operation: ");
+        printf("\n=== Country Management System ===\n");
+        printf("1. Add Country\n2. Delete Country\n3. List Countries\n4. Add Region\n");
+        printf("5. Delete Region\n6. List Regions by Country\n7. Calculate Avg Region Population\n");
+        printf("8. Calculate Total Population\n0. Exit\nChoose an option: ");
         scanf("%d", &choice);
         getchar();
 
@@ -61,33 +62,33 @@ void main_menu() {
             case 1: add_country_ui(); break;
             case 2: {
                 int id;
-                printf("Enter the country ID to be deleted: ");
+                printf("Enter country ID to delete: ");
                 scanf("%d", &id);
-                delete_country(id) ? printf("Deleted successfully！\n") : printf("Deletion failed！\n");
+                delete_country(id) ? printf("Country deleted!\n") : printf("Deletion failed!\n");
                 break;
             }
             case 3: print_countries(); break;
             case 4: add_region_ui(); break;
             case 5: {
                 int id;
-                printf("Enter the region ID to be deleted: ");
+                printf("Enter region ID to delete: ");
                 scanf("%d", &id);
-                delete_region(id) ? printf("Deleted successfully！\n") : printf("Deletion failed！\n");
+                delete_region(id) ? printf("Region deleted!\n") : printf("Deletion failed!\n");
                 break;
             }
-            case 6: {
+            case 6: {  // 修复：添加代码块并声明 id
                 int id;
-                printf("Input Country ID: ");
+                printf("Enter country ID: ");
                 scanf("%d", &id);
                 print_regions_by_country(id);
                 break;
             }
             case 7: {
                 int id;
-                printf("Input Country ID: ");
+                printf("Enter country ID: ");
                 scanf("%d", &id);
                 float avg = get_avg_region_population(id);
-                printf("Average population: %.2f\n", avg);
+                printf("Average region population: %.2f\n", avg);
                 break;
             }
             case 8: {
@@ -95,38 +96,36 @@ void main_menu() {
                 printf("Total population: %d\n", total);
                 break;
             }
-            case 0: printf("See you！\n"); break;
-            default: printf("Invalid option！\n");
+            case 0: printf("Goodbye!\n"); break;
+            default: printf("Invalid option!\n");
         }
     } while (choice != 0);
 }
-
 int main() {
     if (!initialize_database("src/countries.db")) {
-        fprintf(stderr, "Database initialization failed！\n");
+        fprintf(stderr, "Database initialization failed!\n");
         return 1;
     }
 
     if (!table_exists("country")) {
-        execute_sql(
-            "CREATE TABLE country ("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "name TEXT NOT NULL, "
-            "capital TEXT, "
-            "language TEXT, "
-            "population_country INTEGER DEFAULT 0, "
-            "square_country REAL DEFAULT 0.0, "
-            "currency TEXT, "
-            "head_country TEXT"
-            ");"
-        );
-        execute_sql(
+execute_sql(
+    "CREATE TABLE country ("
+    "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+    "name TEXT NOT NULL, "
+    "capital TEXT, "
+    "language TEXT, "
+    "population_country INTEGER DEFAULT 0, "  // 确保列名与插入语句匹配
+    "square_country REAL DEFAULT 0.0, "
+    "currency TEXT, "
+    "head_country TEXT"
+    ");"
+);        execute_sql(
             "CREATE TABLE region ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "name TEXT NOT NULL, "
-            "capital_region TEXT, "
-            "population_region INTEGER DEFAULT 0, "
-            "square_region REAL DEFAULT 0.0, "
+            "capital TEXT, "  // 字段名统一为 capital
+            "population INTEGER DEFAULT 0, "
+            "square REAL DEFAULT 0.0, "  // 字段名统一为 square
             "country_id INTEGER, "
             "FOREIGN KEY (country_id) REFERENCES country(id) ON DELETE CASCADE"
             ");"

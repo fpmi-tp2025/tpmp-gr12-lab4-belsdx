@@ -7,11 +7,11 @@ sqlite3 *db = NULL;
 bool initialize_database(const char *db_name) {
     printf("Connecting to database: %s\n", db_name);
     if (sqlite3_open(db_name, &db) != SQLITE_OK) {
-        fprintf(stderr, "Unable to open database: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Failed to open database: %s\n", sqlite3_errmsg(db));
         return false;
     }
     if (sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL) != SQLITE_OK) {
-        fprintf(stderr, "Foreign key enablement failed: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Failed to enable foreign keys: %s\n", sqlite3_errmsg(db));
         return false;
     }
     return true;
